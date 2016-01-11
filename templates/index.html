@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shit Francisco says</title>
+    <link rel="stylesheet" href="media/style.css" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+</head>
+<body>
+    <div class="title">
+        <img src="media/logo.png" alt="Shit Francisco Says" />
+    </div>
+    <div id="posts" class="posts">
+        <div class="post-empty hidden">
+            <p>Francisco has apparently said nothing.</p>
+        </div>
+        <div class="post-template hidden">
+            <li>
+                <a href="#" data-post-id="__id__" class="delete-button __delete-button-hidden-class__">[x]</a>
+                <date>__date__</date>
+                <p>__message__</p>
+            </li>
+        </div>
+        <div class="post-content"></div>
+    </div>
+    <div class="add">
+        <form id="create-message">
+            <textarea name="message" placeholder="New shit francisco just said"></textarea>
+            <button type="submit">Add newish thing</button>
+        </form>
+    </div>
+
+    <script>
+    var posts = {{ posts | safe }};
+    var postsElement = document.getElementById('posts');
+    var showDeleteButtons = Boolean(location.search.match(/delete/));
+
+    function render() {
+        var postsTemplate = postsElement.querySelector('.post-template').innerHTML;
+        var postsEmpty = postsElement.querySelector('.post-empty').innerHTML;
+        var postsContentElement = postsElement.querySelector('.post-content');
+        
+        var listInnerHTML = '';
+        posts.forEach(function (post) {
+            post['delete-button-hidden-class'] = showDeleteButtons ? '' : 'hidden';
+            listInnerHTML += postsTemplate.replace(/__([a-z-]+)__/g, function ($0, $1) {
+                var name = $1;
+                var value = post[name];
+                return value;
+            });
+        });
+        if (listInnerHTML) {
+            postsContentElement.innerHTML = '<ul>' + listInnerHTML + '</ul>';
+        } else {
+            postsContentElement.innerHTML = postsEmpty;
+        }
+    }
+    render();
+    function onCreatePost(post) {
+        posts.push(post);
+        render();
+    }
+    function onDeletePost(postId) {
+        posts = posts.filter(function (post) {
+            return String(post.id) !== String(postId);
+        });
+        render();
+    }
+    function log() {
+        if (!console) {
+            return;
+        }
+        console.log.apply(console, arguments);
+    }
+
+    var createForm = document.getElementById("create-message");
+    createForm.onsubmit = function (event) {
+        var message = createForm.message.value;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/posts');
+        xhr.send(JSON.stringify({
+            message: message
+        }));
+        xhr.onload = function () {
+            onCreatePost(JSON.parse(xhr.responseText));
+        };
+        xhr.onerror = function (error) {
+            log("error", error);
+        };
+        return false;
+    };
+    
+    
+    postsElement.addEventListener("click", function (event) {
+        var isDeleteButton =
+            event.target &&
+            event.target.tagName.toLowerCase() == 'a' &&
+            event.target.className.match('delete-button');
+        if (!isDeleteButton) return;
+        var deleteButton = event.target;
+        var postId = deleteButton.getAttribute('data-post-id');
+        if (postId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('DELETE', '/posts/' + postId);
+            xhr.send(null);
+            xhr.onload = function (data) {
+                onDeletePost(postId);
+            };
+            xhr.onerror = function (error) {
+                log("error", error);
+            };
+        }
+        return false;
+    });
+    </script>
+</body>
+<html>
