@@ -17,6 +17,13 @@ def index():
         json.JSONEncoder().encode([\
             dict(post.to_dict(), id=post.key.urlsafe()) for post in posts]))
 
+@app.route('/posts', methods=['GET'])
+def list_posts():
+    posts = Post.query().order(Post.date).fetch()
+    return json.jsonify({
+        "posts": [p.to_dict() for p in posts]
+    });
+
 @app.route('/posts', methods=['POST'])
 def create_post():
     message = request.get_json(force=True)["message"]
