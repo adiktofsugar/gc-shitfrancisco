@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:base="http://shitfranciscosays.com">
+  <id>http://shitfranciscosays.com/</id>
+  <title>Shit Francisco Says</title>
+  <updated>{{ updated }}</updated>
+  <link rel="self" href="/feed"/>
+  <logo>/media/logo.png</logo>
+  <author>
+    <name>Francisco Quiroz</name>
+  </author>
+
+  {% for post in posts %}
+
+  <entry>
+    <title>{{ post.title }}</title>
+    <id>http://shitfranciscosays.com/feed/posts/{{ post.id }}</id>
+    <updated>{{ post.rfc_date }}</updated>
+    <content>{{ post.message }}</content>
+  </entry>
+
+  {% endfor %}
+
+</feed>

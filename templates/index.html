@@ -7,7 +7,8 @@
 </head>
 <body>
     <div class="title">
-        <img src="media/logo.png" alt="Shit Francisco Says" />
+        <img src="/media/logo.png" alt="Shit Francisco Says" />
+        <a class="rss-link" type="application/rss+xml" href="/feed"><img src="/media/feed-icon-28x28.png" /></a>
     </div>
     <div id="posts" class="posts">
         <div class="post-empty hidden">
@@ -33,6 +34,7 @@
     var posts = {{ posts | safe }};
     var postsElement = document.getElementById('posts');
     var showDeleteButtons = Boolean(location.search.match(/delete/));
+    var createForm = document.getElementById("create-message");
 
     function render() {
         var postsTemplate = postsElement.querySelector('.post-template').innerHTML;
@@ -53,6 +55,7 @@
         } else {
             postsContentElement.innerHTML = postsEmpty;
         }
+        createForm.message.value = '';
     }
     render();
     function onCreatePost(post) {
@@ -72,7 +75,6 @@
         console.log.apply(console, arguments);
     }
 
-    var createForm = document.getElementById("create-message");
     createForm.onsubmit = function (event) {
         var message = createForm.message.value;
         var xhr = new XMLHttpRequest();

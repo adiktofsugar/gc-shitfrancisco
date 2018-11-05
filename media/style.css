@@ -17,8 +17,15 @@ body {
     font-family: "Helvetica Neue", Helvetica, sans-serif;
     font-size: 35px;
     background: rgba(0,0,0,0.8);
-    padding: 10px;
+    /* rss icon is 28x28 */
+    padding: 10px 30px 10px 10px;
     float: right;
+    position: relative;
+}
+.rss-link {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 .hidden {

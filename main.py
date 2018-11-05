@@ -1,7 +1,9 @@
 """`main` is the top level module for your Flask application."""
 import time
+from datetime import datetime
+from rfc3339 import rfc3339
 import yaml
-from flask import Flask, render_template, abort, redirect, url_for, request, json
+from flask import Flask, render_template, abort, redirect, url_for, request, json, make_response
 from google.appengine.ext import ndb
 
 app = Flask(__name__)
@@ -9,6 +11,8 @@ app = Flask(__name__)
 class Post(ndb.Model):
     message = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
+    title = ndb.ComputedProperty(lambda self: "%s..." % self.message[0:100] if len(self.message) > 100 else self.message)
+    rfc_date = ndb.ComputedProperty(lambda self: rfc3339(self.date, utc=True))
 
 @app.route('/')
 def index():
@@ -16,6 +20,29 @@ def index():
     return render_template('index.html', posts=\
         json.JSONEncoder().encode([\
             dict(post.to_dict(), id=post.key.urlsafe()) for post in posts]))
+
+@app.route('/feed')
+def feed_index():
+    # http://validator.w3.org/feed/
+    # https://stackoverflow.com/questions/8507301/generating-rss-feed-under-google-app-engine
+    # http://www.atomenabled.org/developers/syndication/
+    posts = Post.query().order(Post.date).fetch()
+    updated = rfc3339(datetime.now(), utc=True)
+    if len(posts) > 0:
+        updated = rfc3339(posts[0].date, utc=True)
+        print "posts len is > 0, updated is %s" % str(updated)
+    response = make_response(render_template('feed/index.xml',
+        posts=[dict(post.to_dict(), id=post.key.urlsafe()) for post in posts],
+        updated=updated
+    ))
+    response.headers["content-type"] = "application/atom+xml"
+    return response
+
+@app.route('/feed/posts/<post_id>', methods=['GET'])
+def feed_post(post_id):
+    post_key = ndb.Key(urlsafe=post_id)
+    post = post_key.get()
+    return render_template("feed/post.html", post=dict(post.to_dict()), id=post.key.urlsafe())
 
 @app.route('/posts', methods=['GET'])
 def list_posts():
