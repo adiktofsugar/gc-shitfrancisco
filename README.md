@@ -6,4 +6,4 @@ It's a silly site. Full of ridiculous things francisco says. That guy.
 ## Quick links
 - Install requirements: `pip install -r requirements.txt -t lib`
 - Run locally: `dev_appserver.py .`
-- Deploy `appcfg.py --oauth2 update .`
+- Deploy `gcloud app deploy --project shitfrancisco`
