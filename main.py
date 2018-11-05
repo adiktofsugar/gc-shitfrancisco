@@ -8,10 +8,11 @@ from google.appengine.ext import ndb
 
 app = Flask(__name__)
 
+MAX_TITLE_LEN = 15
 class Post(ndb.Model):
     message = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
-    title = ndb.ComputedProperty(lambda self: "%s..." % self.message[0:100] if len(self.message) > 100 else self.message)
+    title = ndb.ComputedProperty(lambda self: "%s..." % self.message[0:MAX_TITLE_LEN] if len(self.message) > MAX_TITLE_LEN else self.message)
     rfc_date = ndb.ComputedProperty(lambda self: rfc3339(self.date, utc=True))
 
 @app.route('/')
